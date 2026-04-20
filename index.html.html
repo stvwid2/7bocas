@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#0b0f1a">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Escala 7Bocas">
+<link rel="manifest" href="manifest.json">
+<title>Escala 7Bocas</title>
+<style>
+:root{--bg:#0b0f1a;--card:#141b2d;--muted:#9aa4bf;--text:#eef3ff;--accent:#4f8cff;--accent2:#7b61ff;--ok:#18c37e}
+*{box-sizing:border-box} body{margin:0;font-family:-apple-system,BlinkMacSystemFont,Segoe UI,Roboto,sans-serif;background:linear-gradient(180deg,#0a0d18,#11172a);color:var(--text)}
+.wrap{max-width:980px;margin:auto;padding:18px}
+.header{background:linear-gradient(135deg,#17213d,#0f1530);border:1px solid #26304f;padding:18px;border-radius:24px;box-shadow:0 12px 40px rgba(0,0,0,.35);position:sticky;top:10px;z-index:3;backdrop-filter: blur(12px)}
+.h1{font-size:30px;font-weight:800}.sub{color:var(--muted);margin-top:6px}
+.grid{display:grid;grid-template-columns:1.2fr .8fr;gap:18px;margin-top:18px}@media(max-width:860px){.grid{grid-template-columns:1fr}}
+.card{background:var(--card);border:1px solid #26304f;border-radius:22px;padding:18px;box-shadow:0 10px 30px rgba(0,0,0,.28);animation:fade .45s ease}
+@keyframes fade{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+.input{width:100%;background:#0d1325;color:#fff;border:1px solid #2b3657;padding:14px;border-radius:14px;font-size:16px}
+.btn{background:linear-gradient(135deg,var(--accent),var(--accent2));border:none;color:#fff;padding:13px 18px;border-radius:14px;font-weight:700;cursor:pointer;margin-top:10px}
+.cal{display:grid;grid-template-columns:repeat(7,1fr);gap:8px;margin-top:12px}
+.day,.dow{padding:12px;border-radius:14px;text-align:center}.dow{color:var(--muted)}
+.day{background:#0d1325;border:1px solid #2b3657;cursor:pointer;transition:.2s}
+.day:hover{transform:translateY(-2px);border-color:#4f8cff}.sel{outline:2px solid var(--accent)}
+.shift{display:flex;justify-content:space-between;align-items:center;background:#0d1325;border:1px solid #2b3657;padding:14px;border-radius:16px;margin-top:12px}
+.badge{background:#18274a;padding:8px 10px;border-radius:12px;color:#bcd0ff}.ok{color:var(--ok)}
+.small{font-size:13px;color:var(--muted)}
+.install{margin-top:12px;padding:10px;border:1px dashed #3b4b7c;border-radius:14px;color:#c8d4ff}
+</style>
+</head>
+<body>
+<div class="wrap">
+<div class="header">
+<div class="h1">Escala 7Bocas</div>
+<div class="sub">Consulta de plantão • Offline • Instalável iPhone e Android</div>
+<div class="install">iPhone: Compartilhar → Adicionar à Tela de Início. Android: botão Instalar quando disponível.</div>
+</div>
+<div class="grid">
+<div class="card">
+<h3>Consultar por data</h3>
+<input id="dateInput" class="input" type="date" min="2026-04-21" max="2026-06-21">
+<button class="btn" onclick="consultar()">Consultar escala</button>
+<div id="resultado"></div>
+</div>
+<div class="card">
+<h3>Calendário</h3>
+<div id="monthTitle" class="small"></div>
+<div class="cal" id="calendar"></div>
+</div>
+</div>
+</div>
+<script>
+const inicio=new Date('2026-04-21T00:00:00');
+const fim=new Date('2026-06-21T00:00:00');
+const ciclo=[
+[['08:30–18:00',['Maicom','JK']],['18:00–03:00',['Meno VH','Frngo']]],
+[['08:30–18:00',['Nego','Gordão']],['18:00–03:00',['Sedão','Meia Noite']]],
+[['08:30–18:00',['Maicom','Meno VH']],['18:00–03:00',['JK','Nego']]],
+[['08:30–18:00',['Frngo','Sedão']],['18:00–03:00',['Gordão','Meia Noite']]],
+[['08:30–18:00',['Maicom','Frngo']],['18:00–03:00',['JK','Sedão']]],
+[['08:30–18:00',['Meno VH','Nego']],['18:00–03:00',['Gordão','Meia Noite']]],
+[['08:30–18:00',['Maicom','Gordão']],['18:00–03:00',['Frngo','Meia Noite']]],
+[['08:30–18:00',['JK','Sedão']],['18:00–03:00',['Meno VH','Nego']]]
+];
+function fmt(d){return d.toISOString().slice(0,10)}
+function escalaData(ds){const d=new Date(ds+'T00:00:00'); if(d<inicio||d>fim)return null; const diff=Math.floor((d-inicio)/86400000); return ciclo[diff%8]}
+function consultar(ds){ds=ds||document.getElementById('dateInput').value||fmt(inicio);document.getElementById('dateInput').value=ds;const e=escalaData(ds);const r=document.getElementById('resultado'); if(!e){r.innerHTML='<div class=shift>Fora do período.</div>';return}
+r.innerHTML=`<div class='shift'><div><div class='small'>Turno 1</div><div><b>${e[0][0]}</b></div></div><div class='badge'>${e[0][1].join(' + ')}</div></div><div class='shift'><div><div class='small'>Turno 2</div><div><b>${e[1][0]}</b></div></div><div class='badge'>${e[1][1].join(' + ')}</div></div><div class='shift'><div class='ok'>Ciclo automático ativo</div><div>${((Math.floor((new Date(ds)-inicio)/86400000)%8)+1)}</div></div>`}
+function gerarCalendario(){const c=document.getElementById('calendar'); c.innerHTML=''; const dows=['D','S','T','Q','Q','S','S']; dows.forEach(x=>{let n=document.createElement('div');n.className='dow';n.textContent=x;c.appendChild(n)});
+document.getElementById('monthTitle').textContent='Abril a Junho de 2026';
+for(let d=new Date(inicio);d<=fim;d.setDate(d.getDate()+1)){
+let b=document.createElement('div'); b.className='day'; b.textContent=d.getDate(); let ds=fmt(new Date(d)); b.onclick=()=>{document.querySelectorAll('.day').forEach(x=>x.classList.remove('sel'));b.classList.add('sel');consultar(ds)}; c.appendChild(b);
+}
+}
+if('serviceWorker' in navigator){window.addEventListener('load',()=>navigator.serviceWorker.register('./service-worker.js'))}
+let deferredPrompt=null;window.addEventListener('beforeinstallprompt',e=>{e.preventDefault();deferredPrompt=e;const b=document.createElement('button');b.className='btn';b.textContent='Instalar App';b.onclick=async()=>{deferredPrompt.prompt();await deferredPrompt.userChoice};document.querySelector('.header').appendChild(b)})
+gerarCalendario();consultar('2026-04-21');
+</script>
+</body>
+</html>
